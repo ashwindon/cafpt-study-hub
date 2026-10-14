@@ -2112,6 +2112,806 @@ DECKS['2.4'] = [
   }
 ];
 
+/* ============================ 3.1  Testing Fundamentals ============================ */
+DECKS['3.1'] = [
+  {
+    cat:'fundamentals', label:'Purpose',
+    front:`What is the purpose of security testing in the automotive lifecycle, and which standards require it?`,
+    back:[
+      `Security testing checks that the mitigations in the design actually resist the <b>attack paths identified in the TARA</b>`,
+      `It also validates that the <b>cybersecurity goals</b> are met at ECU, system and vehicle level`,
+      `<b>ISO/SAE 21434 clause 10</b> covers verification (including fuzzing, scanning and penetration testing); <b>clause 11</b> covers validation of the goals in the integrated item`,
+      `<b>UN R155</b> expects the manufacturer to show that the security measures are effective for the vehicle type, and test results are that evidence`,
+      `Results feed back into the TARA: feasibility ratings and residual risk are updated`
+    ]
+  },
+  {
+    cat:'standard', label:'Verification vs Validation',
+    front:`Distinguish verification from validation in ISO/SAE 21434, and give an example of each.`,
+    back:[
+      `<b>Verification (clause 10):</b> confirming that the requirements and design are implemented correctly, “did we build it right?”`,
+      `<b>Example:</b> a functional test that replays a frame and confirms SecOC discards it`,
+      `<b>Validation (clause 11):</b> confirming that the cybersecurity goals are achieved in the integrated item, “did we build the right thing?”`,
+      `<b>Example:</b> a vehicle-level penetration test showing the external interfaces cannot reach the safety bus`,
+      `Both produce evidence for the cybersecurity case`
+    ]
+  },
+  {
+    cat:'methodology', label:'Test Types',
+    front:`List the main security testing methods and the goal of each.`,
+    back:[
+      `<b>Vulnerability scanning:</b> find known weaknesses and misconfigurations (Nmap on a TCU, SBOM scan against known CVEs)`,
+      `<b>Fuzz testing:</b> trigger crashes and logic faults with malformed input (UDS, CAN, BLE, parsers)`,
+      `<b>Penetration testing:</b> chain weaknesses to realise an attack path (IVI to gateway to CAN pivot)`,
+      `<b>Static and dynamic code analysis:</b> find defects in source or binary (Ghidra review of ECU firmware)`,
+      `<b>Functional security testing:</b> check that each cybersecurity requirement works as specified`,
+      `<b>Red teaming:</b> test detection and response end to end with monitoring active`
+    ]
+  },
+  {
+    cat:'methodology', label:'Knowledge Levels',
+    front:`Explain black, grey and white box testing, and which methods usually use which.`,
+    back:[
+      `<b>Black box:</b> the tester receives no internal information, like an external attacker`,
+      `<b>Grey box:</b> partial information, such as interface lists, a DBC file or a debug build`,
+      `<b>White box:</b> full design documents and source code`,
+      `Scanning and fuzzing are typically black or grey box; penetration tests may be black, grey or white box; code analysis and functional security testing are white box`,
+      `<b>Exam hint:</b> red teaming is a different dimension, since it tests detection and response rather than how much the tester knows`
+    ]
+  },
+  {
+    cat:'methodology', label:'Red Team',
+    front:`How does red teaming differ from a standard penetration test?`,
+    back:[
+      `A penetration test aims to <b>find and prove weaknesses and attack paths</b>`,
+      `A red team attacks <b>while the defenders are monitoring</b>, for example a vehicle SOC (VSOC), so it tests <b>detection and response</b> as well as prevention`,
+      `Typically black box and objective-driven, with stealth as part of the goal`,
+      `Useful for checking the post-production monitoring that UN R155 requires`
+    ]
+  },
+  {
+    cat:'methodology', label:'Scoping',
+    front:`Why should security tests be derived from TARA attack paths?`,
+    back:[
+      `Tests derived from attack paths <b>cover the high-risk paths</b> and let results trace back to risk`,
+      `Plan at least one test per attack path and per cybersecurity requirement, and keep a traceability matrix`,
+      `Tests that ignore the TARA leave high-risk paths untested and cannot update feasibility ratings`,
+      `Include the whole item: ECUs, radios, diagnostics, backend and apps`
+    ]
+  },
+  {
+    cat:'methodology', label:'Test Levels',
+    front:`Why must security testing cover several levels, and what is the risk of testing only components?`,
+    back:[
+      `<b>Levels:</b> component, ECU, integrated system, vehicle, plus backend and mobile app`,
+      `Weaknesses <b>between ECUs, in the gateway or across the architecture</b> only appear at system or vehicle level`,
+      `Component-only testing misses cross-ECU pivots such as head unit to gateway to CAN`,
+      `Vehicle-level tests need safety controls (bench, HIL or stands) and written authorisation`
+    ]
+  },
+  {
+    cat:'methodology', label:'Test Design',
+    front:`Why are negative, boundary and abuse cases needed?`,
+    back:[
+      `Happy-path tests show only that <b>normal use works</b>`,
+      `Attackers send malformed input, boundary values and misuse functions, so these must be tested explicitly`,
+      `<b>Negative case:</b> invalid input or unauthorised request, expecting rejection`,
+      `<b>Abuse case:</b> intentional misuse, for example repeated invalid SecurityAccess keys`,
+      `<b>Boundary case:</b> limits of length, range and timing`
+    ]
+  },
+  {
+    cat:'methodology', label:'Process',
+    front:`Outline a penetration testing process (PTES-style) as applied to a vehicle.`,
+    back:[
+      `<b>1 Scoping</b> and rules of engagement`,
+      `<b>2 Reconnaissance:</b> documentation, filings, teardown, firmware downloads`,
+      `<b>3 Vulnerability analysis:</b> interface and bus analysis, scanning`,
+      `<b>4 Exploitation:</b> prove the weakness is real`,
+      `<b>5 Post-exploitation:</b> pivot and measure impact`,
+      `<b>6 Reporting:</b> severity, evidence, reproduction steps and remediation`,
+      `<b>7 Retest</b> after fixes`
+    ]
+  },
+  {
+    cat:'methodology', label:'Rules of Engagement',
+    front:`What do rules of engagement (ROE) contain, and why do they matter in automotive testing?`,
+    back:[
+      `The agreed <b>scope, limits, safety constraints and authorisations</b> for a test`,
+      `Includes written permission from the owner and OEM, the safe test environment, and legal limits such as RF transmission rules`,
+      `Matters because tests can <b>brick ECUs, trigger actuators, or transmit on regulated bands</b>`,
+      `Without ROE a test can be unsafe or unlawful, and its evidence of limited value`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Common Gaps',
+    front:`Name the typical weaknesses of a security testing programme.`,
+    back:[
+      `<b>Weak scoping:</b> tests not derived from TARA attack paths`,
+      `<b>Happy-path only:</b> negative, boundary and abuse cases missing`,
+      `<b>Component-only testing:</b> no integrated system or vehicle-level test`,
+      `<b>Stale results:</b> no retest after fixes, updates or design changes`,
+      `<b>Evidence gaps:</b> no traceability from requirement to test to result; findings lack severity and remediation`,
+      `<b>Unsafe or unauthorised testing:</b> live vehicles or public roads without safety controls and written permission`
+    ]
+  },
+  {
+    cat:'methodology', label:'Reporting and Retest',
+    front:`What makes a security test report actionable, and what must happen after a fix is delivered?`,
+    back:[
+      `Each finding has <b>severity, evidence, reproduction steps, remediation advice and a CWE/CVE reference</b>`,
+      `Link the finding to the TARA path and risk so the priority is clear`,
+      `After a fix: <b>retest</b> to confirm it works, then update the TARA feasibility and residual risk`,
+      `A supplier statement that something is fixed is not evidence; closing a finding without a retest is a classic gap`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Match the scenario to the method (exam drill).`,
+    back:[
+      `Confirm SecOC rejects a replayed frame → <b>functional security testing</b>`,
+      `Send malformed UDS requests to find crashes → <b>fuzz testing</b>`,
+      `Chain IVI weakness to a CAN pivot → <b>penetration testing</b>`,
+      `Attack while the VSOC is watching → <b>red teaming</b>`,
+      `Review ECU firmware with full source → <b>white box code analysis</b>`,
+      `Check a TCU for open ports and known CVEs → <b>vulnerability scanning</b>`
+    ]
+  }
+];
+
+/* ============================ 3.2  Automotive Penetration Testing ============================ */
+DECKS['3.2'] = [
+  {
+    cat:'fundamentals', label:'Overview',
+    front:`What is an automotive penetration test, and what makes it different from IT penetration testing?`,
+    back:[
+      `An authorised attack on the vehicle, its ECUs, radios, diagnostics, backend and apps, <b>the way a real adversary would</b>, under safety controls`,
+      `Goal: show a realistic path from an exposed interface to a safety-critical function or valuable data`,
+      `Differences from IT: <b>physical safety risk</b>, scarce and costly hardware that can be bricked, proprietary buses (CAN, LIN, FlexRay), RF regulation, and long-lived devices`,
+      `Scope and execution strategy decide whether findings are meaningful`
+    ]
+  },
+  {
+    cat:'methodology', label:'Seven Phases',
+    front:`List the seven phases of an automotive penetration test with the output of each.`,
+    back:[
+      `<b>1 Scoping and ROE</b> → signed scope and rules of engagement`,
+      `<b>2 Reconnaissance</b> → interface and component inventory`,
+      `<b>3 Attack surface mapping</b> → attack surface map compared with the TARA`,
+      `<b>4 Interface and bus testing</b> → initial findings`,
+      `<b>5 ECU and firmware testing</b> → firmware-level findings`,
+      `<b>6 Exploitation and pivoting</b> → proven attack paths`,
+      `<b>7 Reporting and retest</b> → report and retest results`
+    ]
+  },
+  {
+    cat:'methodology', label:'Phase 1 · Scoping',
+    front:`What does phase 1 (scoping and rules of engagement) establish?`,
+    back:[
+      `Targets and interfaces in scope, the <b>safe test environment</b>, <b>legal limits</b> and success criteria`,
+      `Written authorisation from the vehicle or ECU owner and, where needed, the OEM`,
+      `Clearance for RF transmission and for any testing that could affect safety functions`,
+      `<b>Scope pitfall:</b> excluding backend, apps, supply-chain components or other ECUs, or testing only one ECU, so realistic attack paths are never found`
+    ]
+  },
+  {
+    cat:'methodology', label:'Phase 2 · Recon',
+    front:`What does reconnaissance cover in an automotive test?`,
+    back:[
+      `Public documentation, <b>regulatory filings (such as FCC)</b>, teardown photos and firmware downloads`,
+      `Physical teardown to identify components, interfaces and debug points`,
+      `RF survey of the vehicle's transmissions and network discovery on its interfaces`,
+      `Output: an <b>inventory of interfaces and components</b> used to build the attack surface map`
+    ]
+  },
+  {
+    cat:'attack', label:'Phase 3 · Attack Surface',
+    front:`Which entry points does attack surface mapping assess, and what is compared against what?`,
+    back:[
+      `<b>Physical:</b> OBD-II and diagnostics, USB`,
+      `<b>Short-range wireless:</b> Bluetooth/BLE, Wi-Fi, NFC, keyless RF/LF, TPMS`,
+      `<b>Long-range:</b> cellular TCU, V2X`,
+      `<b>Off-vehicle:</b> backend APIs and mobile apps`,
+      `The resulting map is <b>compared with the TARA</b> to confirm that no interface has been missed`
+    ]
+  },
+  {
+    cat:'methodology', label:'Phases 4 and 5',
+    front:`What is tested in the interface/bus phase and in the ECU/firmware phase?`,
+    back:[
+      `<b>Interface and bus (4):</b> CAN and diagnostic testing, radio testing, network service testing`,
+      `<b>ECU and firmware (5):</b> extract and analyse firmware, probe debug ports, test secure boot and the update mechanism`,
+      `Typical tools: SavvyCAN, can-utils, <code>caringcaribou</code>, SDRs, Nmap, Ghidra, <code>binwalk</code>, JTAG/SWD/UART tools`,
+      `Initial findings from phase 4 guide where to dig in phase 5`
+    ]
+  },
+  {
+    cat:'methodology', label:'Phase 6 · Pivoting',
+    front:`What distinguishes exploitation and pivoting from the earlier phases?`,
+    back:[
+      `It <b>chains findings</b> from an external interface to a critical bus or data store`,
+      `<b>Pivot:</b> using a compromised component to reach another network or ECU, for example head unit to gateway to CAN`,
+      `The target is a <b>proven end-to-end attack path</b>, not a list of isolated bugs`,
+      `Reflects real incidents such as the Jeep Cherokee (2015) and Tesla (2016) chains`
+    ]
+  },
+  {
+    cat:'tooling', label:'Environments',
+    front:`Compare the test environments: bench, HIL rig, vehicle on stands or track, and Faraday enclosure.`,
+    back:[
+      `<b>Bench with ECU harness and power supply:</b> safe, repeatable ECU testing without a vehicle`,
+      `<b>HIL (hardware-in-the-loop) rig:</b> real ECU connected to simulated vehicle signals and neighbour ECUs, for system-level tests`,
+      `<b>Vehicle on stands or test track:</b> final validation; requires safety controls`,
+      `<b>Faraday enclosure or shielded room:</b> contains RF transmission during radio testing`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Execution Risks',
+    front:`What can go wrong during an automotive penetration test, and how is it prepared for?`,
+    back:[
+      `<b>Risks:</b> bricking an ECU, triggering a safety function, immobiliser lockout, DTC pollution`,
+      `<b>Preparation:</b> spare ECUs, bench or HIL, <b>firmware backups</b>, and a recovery procedure through the bootloader or JTAG`,
+      `Clear DTCs after testing and record the original software versions`,
+      `Backups and spares keep the schedule on track when a unit is lost`
+    ]
+  },
+  {
+    cat:'defense', label:'Safety and Legality',
+    front:`What safety and legal controls apply to vehicle penetration testing?`,
+    back:[
+      `<b>Safety:</b> never test safety actuation on public roads; use stands or a closed track, a safety officer, disabled actuators where possible and a kill switch`,
+      `<b>Legal:</b> written authorisation, RF transmission and jamming restrictions, and care with third-party data in backend tests`,
+      `<b>Environment:</b> shielded room for radio tests, bench or HIL for bus tests`,
+      `Unauthorised testing can breach unauthorised-access and radio laws`
+    ]
+  },
+  {
+    cat:'analysis', label:'Typical Findings',
+    front:`What findings does a typical automotive penetration test produce?`,
+    back:[
+      `Unauthenticated CAN and weak segmentation`,
+      `Weak UDS SecurityAccess`,
+      `Exposed network services and open debug ports`,
+      `Unsigned firmware or update packages`,
+      `Weak BLE pairing or Wi-Fi keys`,
+      `API authorization flaws (IDOR/BOLA) in the backend`,
+      `Prioritise by TARA risk and show the chain, not just the bug`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Which phase is it? (exam drill)`,
+    back:[
+      `Transmitting RF near the vehicle must be cleared in writing → <b>Phase 1, scoping and ROE</b>`,
+      `FCC filings, teardown photos, firmware downloads → <b>Phase 2, reconnaissance</b>`,
+      `Comparing OBD-II, USB, BLE, Wi-Fi, cellular and backend against the TARA → <b>Phase 3, attack surface mapping</b>`,
+      `Dumping flash and probing JTAG → <b>Phase 5, ECU and firmware testing</b>`,
+      `Head unit to gateway to CAN → <b>Phase 6, exploitation and pivoting</b>`,
+      `Verifying that the supplier's fix works → <b>Phase 7, retest</b>`
+    ]
+  }
+];
+
+/* ============================ 3.3  Fuzz Testing ============================ */
+DECKS['3.3'] = [
+  {
+    cat:'fundamentals', label:'Definition',
+    front:`What is fuzz testing, and why is it valuable for vehicles?`,
+    back:[
+      `Automated testing that sends <b>malformed, unexpected or random input</b> to an interface to expose crashes, hangs and logic faults`,
+      `It finds faults that scripted tests miss, since developers rarely test input they never imagined`,
+      `Targets in vehicles: CAN frames, UDS services, network protocols, wireless stacks, file parsers, APIs and ECU firmware`,
+      `Listed as a verification method in ISO/SAE 21434 clause 10`,
+      `Needs careful monitoring because a fault can brick an ECU or trigger an actuator`
+    ]
+  },
+  {
+    cat:'attack', label:'Faults Found',
+    front:`Which kinds of faults does fuzzing typically uncover, and where are the common weak spots?`,
+    back:[
+      `<b>Faults:</b> buffer overflows, integer errors, null dereference, state-machine violations, denial of service, authentication bypass`,
+      `<b>Weak spots:</b> diagnostic service handlers, protocol length parsing, media and update-file parsers, infotainment wireless stacks`,
+      `A crash that is exploitable is a path to code execution on a connected ECU`,
+      `Crashes still need <b>triage</b> to classify exploitability`
+    ]
+  },
+  {
+    cat:'tooling', label:'Fuzzing Targets',
+    front:`Give the target, what is fuzzed and the typical monitor for CAN, UDS and network protocols.`,
+    back:[
+      `<b>CAN / CAN FD:</b> IDs, DLC, payload bytes, cyclic timing; monitor ECU heartbeat, DTCs, bus-off state, cluster behaviour; tools <code>cangen</code>, SavvyCAN, CANoe`,
+      `<b>UDS (ISO 14229):</b> service IDs, sub-functions, DIDs, routine IDs, session transitions; monitor negative response codes, resets, DTCs; tools <code>caringcaribou</code>, Scapy`,
+      `<b>ISO-TP / DoIP / SOME/IP:</b> segmentation, length fields, headers; monitor service crash and timeouts; tools Scapy, Boofuzz`,
+      `<b>BLE / Wi-Fi / USB:</b> packets, descriptors, pairing messages; monitor head unit crash or reboot`
+    ]
+  },
+  {
+    cat:'tooling', label:'Parsers, APIs, Firmware',
+    front:`How are media parsers, backend APIs and ECU firmware fuzzed?`,
+    back:[
+      `<b>Media and file parsers</b> (audio, image, map, update files): AFL++ and Radamsa; monitor head unit crash and logs`,
+      `<b>Backend APIs:</b> parameters, headers, object IDs fuzzed with Burp Suite Intruder or ffuf; look for HTTP errors and authorization bypass`,
+      `<b>ECU firmware:</b> input and peripheral handlers fuzzed <b>in emulation</b> with AFL++, QEMU and Fuzzware, monitoring emulator crashes`,
+      `Emulation avoids bricking real hardware and allows coverage feedback`
+    ]
+  },
+  {
+    cat:'methodology', label:'CAN Fuzzing',
+    front:`How is CAN fuzzing carried out and observed?`,
+    back:[
+      `Generate random or mutated frames with <code>cangen</code> or SavvyCAN, varying ID, DLC and payload and the timing of cyclic messages`,
+      `Run on a <b>bench or HIL</b> with actuators disconnected and current limiting`,
+      `Observe heartbeat messages, DTCs, bus-off state and cluster or lamp behaviour`,
+      `Keep a log of every frame sent so a reaction can be reproduced`,
+      `Watch for bus overload: aggressive generators can starve legitimate traffic`
+    ]
+  },
+  {
+    cat:'methodology', label:'UDS Fuzzing',
+    front:`Why do plain random fuzzers often fail against UDS, and what is the remedy?`,
+    back:[
+      `UDS handlers are <b>state-dependent</b>: many services need a particular session (<code>0x10</code>) or SecurityAccess level (<code>0x27</code>)`,
+      `Random input rarely reaches the right state, so it never gets past the early checks`,
+      `<b>State-aware fuzzing</b> first reaches the correct session or security level, then mutates the requests`,
+      `Discover services with <code>caringcaribou</code>, then fuzz sub-functions, DIDs and routine IDs`,
+      `Read the negative response codes (NRCs) to learn what the ECU accepted or refused`
+    ]
+  },
+  {
+    cat:'methodology', label:'Fuzzing Methods',
+    front:`Explain mutation, generation and coverage-guided fuzzing.`,
+    back:[
+      `<b>Mutation fuzzing:</b> modifies valid samples (captured frames, sample files)`,
+      `<b>Generation fuzzing:</b> builds inputs from a protocol or file-format model, which helps pass structure checks`,
+      `<b>Coverage-guided fuzzing:</b> uses code coverage feedback to keep inputs that reach new code (AFL++, libFuzzer)`,
+      `Coverage guidance is very effective on parsers and emulated firmware; for a black-box ECU, behaviour monitoring replaces coverage`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Hazards',
+    front:`Which hazards are specific to fuzzing live automotive ECUs?`,
+    back:[
+      `<b>ECU lock-up or bricking</b>`,
+      `<b>DTC and counter pollution</b>, filling fault memory`,
+      `<b>Unintended actuator activation</b>`,
+      `<b>Bus overload</b> from high-rate traffic`,
+      `<b>Mitigation:</b> spare ECUs, bench or HIL, current limiting, actuators disconnected, automatic power cycling and recovery`
+    ]
+  },
+  {
+    cat:'methodology', label:'Monitoring',
+    front:`ECUs rarely expose crash logs. How are failures detected during fuzzing?`,
+    back:[
+      `<b>Infer from behaviour:</b> missing cyclic messages, new DTCs, bus-off state, unexpected resets, changed cluster behaviour`,
+      `Poll the ECU with <b>heartbeat or TesterPresent</b> and diagnostic reads between test inputs`,
+      `Power cycle and restore state automatically after a failure`,
+      `Record every input so the crashing test case can be replayed and added as a regression test`
+    ]
+  },
+  {
+    cat:'defense', label:'Fixes',
+    front:`How should the root causes of fuzzing crashes be fixed, and how is the programme improved?`,
+    back:[
+      `<b>Fix the defect:</b> bounds checking, input validation, memory-safe languages`,
+      `<b>Make exploitation harder:</b> stack canaries and ASLR`,
+      `<b>Harden diagnostics:</b> strict service allow-lists, state checks, rate limiting of invalid requests, lockout`,
+      `<b>Process:</b> fuzz before release, integrate fuzzing into development for all external parsers and diagnostic handlers, triage crashes and keep failing inputs as regression tests`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Which tool for which fuzzing job? (exam drill)`,
+    back:[
+      `Generate random or mutated CAN traffic → <b><code>cangen</code></b>`,
+      `Discover and probe UDS services → <b><code>caringcaribou</code></b>`,
+      `Craft ISO-TP, DoIP or SOME/IP frames → <b>Scapy</b>`,
+      `Network and wireless protocol fuzzing → <b>Boofuzz</b>`,
+      `Coverage-guided fuzzing of parsers → <b>AFL++</b>; mutation of files → <b>Radamsa</b>`,
+      `Fuzz web or API parameters → <b>Burp Suite Intruder, ffuf</b>`,
+      `Emulated firmware → <b>QEMU, Fuzzware</b>`
+    ]
+  }
+];
+
+/* ============================ 3.4  Techniques & Challenges ============================ */
+DECKS['3.4'] = [
+  {
+    cat:'fundamentals', label:'Overview',
+    front:`Why does automotive testing need a set of standard techniques, and what makes it hard?`,
+    back:[
+      `Testers rely on a toolbox: <b>sniffing, replay, injection, reverse engineering, firmware extraction, protocol analysis, fault injection</b>`,
+      `Obstacles: proprietary protocols, scarce hardware, safety risk, secure boot and RF regulation`,
+      `Knowing the standard challenges and workarounds separates a productive test from a bricked ECU`
+    ]
+  },
+  {
+    cat:'methodology', label:'Core Techniques',
+    front:`List the core bus and diagnostic techniques used in vehicle testing.`,
+    back:[
+      `<b>Bus sniffing and replay</b> with SavvyCAN, can-utils or Wireshark`,
+      `<b>Message injection</b> to test acceptance of spoofed frames`,
+      `<b>Diagnostic enumeration</b> of UDS services and DIDs (<code>caringcaribou</code>)`,
+      `<b>Reverse engineering from captured traffic:</b> log while triggering functions, then correlate`,
+      `<b>Advanced:</b> fault injection and side-channel analysis (Module 7)`
+    ]
+  },
+  {
+    cat:'methodology', label:'Signal Decoding',
+    front:`A tester does not know what the CAN messages mean. How are proprietary signals decoded?`,
+    back:[
+      `<b>Log traffic while triggering known vehicle functions</b> (lights, doors, pedal, speed) and correlate the changing bytes`,
+      `Use diffing and filtering in SavvyCAN or <code>cansniffer</code>`,
+      `Use a <b>DBC file</b> where one is available: a CAN database describing messages and signals`,
+      `Do not wait for the manufacturer to publish the specification`
+    ]
+  },
+  {
+    cat:'methodology', label:'Hardware Techniques',
+    front:`Which hardware techniques give access to ECU firmware and secrets?`,
+    back:[
+      `<b>Debug-port discovery:</b> find JTAG, SWD or UART pins with a logic analyser, oscilloscope or JTAGulator and talk to them with OpenOCD or Bus Pirate`,
+      `<b>Flash dump:</b> SPI or eMMC readers, flashrom`,
+      `<b>Chip-off:</b> removing a memory chip from the board to read it directly, when no debug port or update path helps`,
+      `<b>Board teardown</b> to identify components and test points`,
+      `<b>Firmware analysis</b> afterwards with <code>binwalk</code> and Ghidra`
+    ]
+  },
+  {
+    cat:'methodology', label:'Radio, Network, Backend',
+    front:`Which techniques apply to radio, network and backend interfaces?`,
+    back:[
+      `<b>Radio:</b> capture, demodulate and replay RKE or TPMS signals (HackRF, RTL-SDR, URH, GNU Radio); BLE and Wi-Fi sniffing; relay testing`,
+      `<b>Network and backend:</b> man-in-the-middle, API manipulation (Burp Suite)`,
+      `<b>Mobile apps:</b> instrumentation with <b>Frida</b>, together with an interception proxy; used for example to bypass certificate pinning`,
+      `<b>Certificate pinning:</b> the app accepts only a specific server certificate or key`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Bench Problems',
+    front:`An ECU on the bench stays silent. What is the likely cause and the workaround?`,
+    back:[
+      `<b>Cause:</b> network management (NM) puts ECUs to sleep, and the ECU is waiting for ignition, wake lines or messages from neighbouring ECUs`,
+      `<b>Workaround:</b> provide ignition and wake lines, a programmable supply, and <b>simulated neighbour messages</b> (HIL simulator, Vector CANoe)`,
+      `Not caused by a cable length or a PC operating system`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Bricking and Lockout',
+    front:`How do testers handle ECU bricking, limited units and immobiliser lockout?`,
+    back:[
+      `<b>Bricking:</b> keep spare ECUs and firmware backups; plan recovery through the bootloader or JTAG`,
+      `<b>Limited vehicles:</b> use bench setups, HIL and ECU emulators`,
+      `<b>Lockout:</b> avoid repeated invalid SecurityAccess attempts, since they trigger delay or lockout logic; test on a bench so a vehicle is not stranded, and clear DTCs afterwards`,
+      `Never keep sending invalid attempts hoping a timer resets`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Secure Boot',
+    front:`Secure boot and encrypted firmware stop a tester reading the code. What are realistic workarounds?`,
+    back:[
+      `<b>Update-package analysis:</b> the update file may be decryptable or less protected`,
+      `<b>Hardware attacks:</b> fault injection or side-channel analysis (Module 7)`,
+      `<b>Vendor cooperation:</b> request a debug build or the source under agreement`,
+      `<b>Not realistic:</b> replacing the bootloader with an unsigned image (secure boot rejects it) or sending random frames until the ECU reveals its firmware`
+    ]
+  },
+  {
+    cat:'pitfall', label:'RF and Safety',
+    front:`How do testers manage RF regulation and physical safety hazards?`,
+    back:[
+      `<b>RF:</b> shielded room or Faraday box, low power, licence-compliant bands; <b>jamming is prohibited</b>`,
+      `<b>Safety:</b> wheels off the ground, actuators disabled, safety officer, kill switch`,
+      `<b>Time and scope limits:</b> prioritise TARA high-risk paths`,
+      `Emissions must stay inside the test setup`
+    ]
+  },
+  {
+    cat:'defense', label:'Raising Attacker Cost',
+    front:`How can designers raise the cost of these techniques for an attacker?`,
+    back:[
+      `<b>Secure boot, encrypted firmware, locked debug ports</b> and tamper detection`,
+      `<b>Protect hardware:</b> remove test pads, use tamper-evident or epoxy enclosures where justified, encrypt flash`,
+      `<b>Protect diagnostics:</b> strong SecurityAccess with lockout and delay`,
+      `<b>Protect radios and backends:</b> authenticated protocols, certificate pinning, rate limiting`,
+      `<b>Do not rely on obscurity:</b> secret CAN IDs are revealed by sniffing and correlation; real protection needs authentication and cryptography such as SecOC`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Match the challenge to the workaround (exam drill).`,
+    back:[
+      `Undocumented CAN IDs → <b>log while triggering functions and correlate; use a DBC</b>`,
+      `Silent ECU on bench → <b>wake lines and simulated neighbour messages</b>`,
+      `Few test vehicles → <b>bench, HIL, emulators</b>`,
+      `Encrypted firmware → <b>update-package analysis, hardware attacks, vendor cooperation</b>`,
+      `Vehicle will not start after faults → <b>clear DTCs, use a bench, avoid repeated invalid SecurityAccess</b>`,
+      `RF transmission limits → <b>Faraday box, low power, legal bands</b>`,
+      `Unexpected actuation → <b>wheels off ground, actuators disabled, safety officer</b>`
+    ]
+  }
+];
+
+/* ============================ 3.5  Tool Understanding ============================ */
+DECKS['3.5'] = [
+  {
+    cat:'fundamentals', label:'Why Tools Matter',
+    front:`Why is tool knowledge core CAFPT content, and what is the general selection rule?`,
+    back:[
+      `Selecting the right tool for each interface, and knowing exactly <b>what it can and cannot do</b>, is core CAFPT knowledge`,
+      `<b>Bus and diagnostics:</b> PCAN/Kvaser + SavvyCAN, can-utils, <code>caringcaribou</code>`,
+      `<b>Radio:</b> RTL-SDR for passive survey; HackRF or Yard Stick One for authorised transmit tests; Proxmark3 for LF/HF tags; Ubertooth for BLE`,
+      `<b>Network and backend:</b> Nmap, Aircrack-ng, Burp Suite/ZAP`,
+      `<b>Firmware and hardware:</b> Ghidra, <code>binwalk</code>, logic analyser, JTAG/UART tools`
+    ]
+  },
+  {
+    cat:'tooling', label:'CAN Software',
+    front:`Describe SavvyCAN, can-utils and SocketCAN.`,
+    back:[
+      `<b>SavvyCAN:</b> capture, filter, replay and reverse-engineer CAN logs; needs a CAN adapter`,
+      `<b>can-utils:</b> Linux command-line tools, <code>candump</code> (record), <code>cansend</code> (send), <code>cansniffer</code> (highlight changing bytes), <code>cangen</code> (generate)`,
+      `<b>SocketCAN:</b> the Linux kernel framework that exposes CAN interfaces as network devices; it provides <b>no security functions</b> itself`,
+      `can-utils are command-line only`
+    ]
+  },
+  {
+    cat:'tooling', label:'CAN Hardware',
+    front:`Compare PCAN-USB, Kvaser, CANable and ELM327.`,
+    back:[
+      `<b>PCAN-USB / Kvaser / CANable:</b> interface a PC to CAN or CAN FD; give <b>raw bus access</b>`,
+      `<b>ELM327:</b> low-cost OBD adapter for <b>basic diagnostic access</b>; slow and no raw bus access, so unsuitable for CAN work`,
+      `<b>Limit:</b> an interface gives bus access only, so software such as SavvyCAN or can-utils is still needed`
+    ]
+  },
+  {
+    cat:'tooling', label:'Diagnostics and Commercial',
+    front:`What do <code>caringcaribou</code> and Vector CANoe/CANalyzer do?`,
+    back:[
+      `<b><code>caringcaribou</code>:</b> UDS and ISO-TP service and DID discovery, SecurityAccess probing; needs access to the diagnostic bus`,
+      `<b>Vector CANoe / CANalyzer:</b> commercial suite for simulation, analysis and automated testing; also used to simulate missing ECUs on a bench`,
+      `Limit of CANoe: costly licence`
+    ]
+  },
+  {
+    cat:'tooling', label:'Wireshark and Scapy',
+    front:`Distinguish Wireshark from Scapy.`,
+    back:[
+      `<b>Wireshark:</b> passive protocol analyser; dissects CAN, ISO-TP, DoIP, SOME/IP, BLE and Wi-Fi captures`,
+      `<b>Scapy:</b> packet crafting; builds and sends CAN, UDS, DoIP and SOME/IP frames through its automotive layers; needs scripting`,
+      `Wireshark analyses; Scapy builds and sends`
+    ]
+  },
+  {
+    cat:'tooling', label:'SDRs',
+    front:`Compare RTL-SDR, HackRF One and Yard Stick One.`,
+    back:[
+      `<b>RTL-SDR:</b> receive-only SDR, roughly 24 MHz to 1.7 GHz; ideal for passive survey, cannot transmit or replay`,
+      `<b>HackRF One:</b> SDR transceiver, 1 MHz to 6 GHz, <b>half-duplex</b>; capture and transmit, lab use under authorisation and ideally shielded`,
+      `<b>Yard Stick One:</b> sub-GHz radio that transmits and receives; <b>cannot cover 2.4 GHz</b>`,
+      `Pair with GNU Radio or URH for demodulation`
+    ]
+  },
+  {
+    cat:'tooling', label:'RFID and Bluetooth',
+    front:`What are Proxmark3 and Ubertooth One used for?`,
+    back:[
+      `<b>Proxmark3:</b> RFID tool; reads and emulates <b>LF 125 kHz and HF 13.56 MHz</b> tags; short range`,
+      `<b>Ubertooth One:</b> sniffs <b>BLE and Bluetooth</b> traffic at 2.4 GHz; limited capture reliability`,
+      `Both appear in key-card and phone-key tests`
+    ]
+  },
+  {
+    cat:'tooling', label:'Network and Web',
+    front:`Which tools handle Wi-Fi, network and backend testing?`,
+    back:[
+      `<b>Aircrack-ng:</b> Wi-Fi handshake capture and cracking; authorised networks only`,
+      `<b>Nmap:</b> service discovery and port scanning`,
+      `<b>Burp Suite / ZAP:</b> intercept and manipulate API and app traffic; needs app or portal access`,
+      `<b>Frida:</b> instruments a running mobile app, for example to bypass certificate pinning`,
+      `Checklists: OWASP API and Mobile Top 10`
+    ]
+  },
+  {
+    cat:'tooling', label:'Reverse Engineering',
+    front:`Which tools unpack and analyse firmware?`,
+    back:[
+      `<b><code>binwalk</code>:</b> unpacks images and finds embedded files and filesystems`,
+      `<b>Ghidra, Radare2:</b> disassemble and decompile the binaries`,
+      `All need a <b>firmware image</b> to start, obtained through a download, update package or hardware dump`,
+      `Typical findings: hardcoded keys, debug code, parsers with bugs`
+    ]
+  },
+  {
+    cat:'tooling', label:'Hardware Debug',
+    front:`Which tools find and use debug interfaces?`,
+    back:[
+      `<b>Logic analyser, oscilloscope:</b> observe signals and find pins`,
+      `<b>JTAGulator:</b> finds JTAG and UART pins`,
+      `<b>Bus Pirate, OpenOCD:</b> talk to debug interfaces and dump memory`,
+      `All require <b>physical access</b> to the board`,
+      `<b>ChipWhisperer</b> is the platform for power analysis and fault injection (glitching), covered in Module 7; needs a specialised setup`
+    ]
+  },
+  {
+    cat:'pitfall', label:'Misuse and Gaps',
+    front:`What are common tool-related mistakes in a security test?`,
+    back:[
+      `<b>Misuse risks:</b> transmitting RF without authorisation, flooding a bus, writing to ECU memory`,
+      `<b>Capability gaps:</b> using receive-only tools for replay, or an ELM327 for raw CAN work`,
+      `<b>Evidence gaps:</b> undocumented tool versions and configurations make results unreproducible`,
+      `<b>Environment gaps:</b> RF tools used without shielding; CAN tools connected to live vehicles`
+    ]
+  },
+  {
+    cat:'defense', label:'Good Practice',
+    front:`How should testers handle their tools responsibly?`,
+    back:[
+      `<b>Match tool to interface</b> and record versions and configurations`,
+      `<b>Isolate:</b> bench for bus tools, shielded room for transmitters`,
+      `<b>Authorise:</b> written permission before transmitting, injecting or flashing`,
+      `<b>Calibrate and verify:</b> check tool output against a known-good capture`,
+      `<b>Defensive use:</b> run the same tools in regression testing to confirm mitigations`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Name the tool (exam drill).`,
+    back:[
+      `Receive-only SDR, about 24 MHz to 1.7 GHz → <b>RTL-SDR</b>`,
+      `Transceiver, 1 MHz to 6 GHz, half-duplex → <b>HackRF One</b>`,
+      `Sub-GHz transmit and receive → <b>Yard Stick One</b>`,
+      `Basic OBD access, no raw bus, slow → <b>ELM327</b>`,
+      `Linux framework exposing CAN as network devices → <b>SocketCAN</b>`,
+      `Power analysis and glitching → <b>ChipWhisperer</b>`,
+      `Unpack a firmware image → <b><code>binwalk</code></b>, then <b>Ghidra</b>`,
+      `Instrument a mobile app → <b>Frida</b>`
+    ]
+  }
+];
+
+/* ============================ 3.6  Exploits & Test Cases ============================ */
+DECKS['3.6'] = [
+  {
+    cat:'fundamentals', label:'Role',
+    front:`What is the relationship between exploits and security test cases?`,
+    back:[
+      `A security test case turns a <b>TARA attack path or cybersecurity requirement</b> into a repeatable procedure`,
+      `An exploit is the <b>proof that a weakness is real</b>`,
+      `Test cases make findings <b>traceable, repeatable and retestable</b>; exploits give them credibility and show impact`,
+      `Both feed the cybersecurity case and update TARA feasibility and residual risk`
+    ]
+  },
+  {
+    cat:'methodology', label:'Anatomy',
+    front:`What must a complete security test case contain?`,
+    back:[
+      `<b>ID</b> and <b>objective</b>`,
+      `<b>Precondition</b> (state of the item and the environment)`,
+      `<b>Steps or action</b>`,
+      `<b>Expected secure result</b>`,
+      `<b>Pass/fail criterion</b>`,
+      `<b>Tool and version</b> used`,
+      `Link to the requirement or attack path (traceability)`,
+      `<b>Design flaw:</b> no expected result, not repeatable, not tied to a requirement`
+    ]
+  },
+  {
+    cat:'example', label:'CAN Test Cases',
+    front:`Give the objective, action and expected result for TC-CAN-01 and TC-CAN-02.`,
+    back:[
+      `<b>TC-CAN-01, replay rejected:</b> precondition SecOC enabled on the target PDU; capture a valid frame and replay it; expected: <b>frame discarded, no state change</b>`,
+      `<b>TC-CAN-02, spoofed ID rejected:</b> precondition gateway in place; inject a safety-critical ID from the IVI segment; expected: <b>gateway blocks the frame</b>`,
+      `The first tests <b>freshness</b> (SecOC), the second tests <b>segmentation and filtering</b>`
+    ]
+  },
+  {
+    cat:'example', label:'UDS Test Cases',
+    front:`Give the objective, action and expected result for TC-UDS-03 and TC-UDS-04.`,
+    back:[
+      `<b>TC-UDS-03, SecurityAccess brute-force limit:</b> programming session open; send repeated invalid keys; expected: <b>attempt delay or lockout enforced</b> (NRC 0x36 exceeded attempts, 0x37 time delay not expired)`,
+      `<b>TC-UDS-04, diagnostics gated by state:</b> vehicle speed above zero; request ECU reset or memory write; expected: <b>negative response</b>`,
+      `Both check that diagnostic services are protected by state and rate limits`
+    ]
+  },
+  {
+    cat:'example', label:'Hardware and Radio Cases',
+    front:`Give the objective, action and expected result for TC-DBG-05, TC-FW-06, TC-RKE-07 and TC-BLE-08.`,
+    back:[
+      `<b>TC-DBG-05, debug ports locked:</b> probe JTAG/SWD/UART on a production ECU; expected: <b>no debug access or memory read</b>`,
+      `<b>TC-FW-06, unsigned firmware rejected:</b> flash a modified image; expected: <b>rejected by secure boot or the update check</b>`,
+      `<b>TC-RKE-07, rolling code not replayable:</b> replay earlier captured codes; expected: <b>no unlock</b>`,
+      `<b>TC-BLE-08, pairing protected:</b> attempt Just Works pairing or passive capture; expected: <b>Secure Connections with MITM protection required</b>`
+    ]
+  },
+  {
+    cat:'example', label:'Backend and Network Cases',
+    front:`Give the objective, action and expected result for TC-API-09 and TC-NET-10.`,
+    back:[
+      `<b>TC-API-09, object-level authorization:</b> two test accounts; request another user's vehicle ID; expected: <b>403 or no data</b>`,
+      `<b>TC-NET-10, unused ports closed:</b> TCU running; port scan; expected: <b>only documented services respond</b>`,
+      `Tools: Burp Suite for the API test, Nmap for the port scan`
+    ]
+  },
+  {
+    cat:'attack', label:'Exploit Classes',
+    front:`Which exploit classes should test cases be designed for?`,
+    back:[
+      `<b>Authentication bypass</b>`,
+      `<b>Replay</b>`,
+      `<b>Memory corruption</b>`,
+      `<b>Logic flaws</b>`,
+      `<b>Privilege escalation</b>, for example diagnostic session escalation that grants rights beyond those intended`,
+      `<b>Insecure update</b>`,
+      `<b>Information disclosure</b>`,
+      `<b>Denial of service</b>`
+    ]
+  },
+  {
+    cat:'methodology', label:'Traceability',
+    front:`What is a traceability matrix, and why is it needed?`,
+    back:[
+      `A mapping from <b>threat to requirement to test to result</b>`,
+      `Shows that every threat has a requirement, every requirement has at least one verifying test, and every test has a result`,
+      `Supports the cybersecurity case and audits under UN R155 and ISO/SAE 21434`,
+      `Without it, coverage gaps stay invisible`
+    ]
+  },
+  {
+    cat:'methodology', label:'Proof of Concept',
+    front:`What makes a good proof of concept (PoC) for an exploit?`,
+    back:[
+      `<b>Minimal and reproducible</b>, with conditions and impact documented`,
+      `Includes the CWE and a severity rating linked to the TARA risk`,
+      `Limits risk to the test target; it should not be as destructive as possible`
+    ,
+      `Shared with the supplier for triage and used later for retest`
+    ]
+  },
+  {
+    cat:'standard', label:'CWE and CVSS',
+    front:`Which scheme classifies a weakness, and which rates the severity of a confirmed exploit?`,
+    back:[
+      `<b>CWE</b> classifies the weakness type (for example CWE-306 missing authentication, CWE-345 insufficient verification of data authenticity, CWE-787 out-of-bounds write)`,
+      `<b>CVSS</b> rates severity (Low, Medium, High, Critical)`,
+      `<b>CVE</b> identifies a specific disclosed vulnerability in a specific product`,
+      `<b>R155 Annex 5</b> threat categories serve as a coverage checklist`,
+      `ASIL, CAL, SFOP and RXSWIN belong to other schemes`
+    ]
+  },
+  {
+    cat:'methodology', label:'Abuse and Negative Cases',
+    front:`Why include abuse and negative cases in the test set?`,
+    back:[
+      `An <b>abuse case</b> is a test of intentional misuse rather than normal use`,
+      `A negative case sends invalid input or an unauthorised request and expects rejection`,
+      `Coverage gaps: only positive tests, no abuse cases, untested interfaces`,
+      `They complement functional tests, which show only that normal use works`
+    ]
+  },
+  {
+    cat:'defense', label:'Regression',
+    front:`Why automate security test cases for regression?`,
+    back:[
+      `Software updates and fixes can <b>reintroduce flaws</b>`,
+      `Automated regression re-runs the cases after every fix or update and confirms mitigations still work`,
+      `Keep crashing inputs and PoCs as regression tests`,
+      `Feed results back to the TARA to update feasibility and residual risk`
+    ]
+  },
+  {
+    cat:'exam', label:'Exam Drill',
+    front:`Quick recall (exam drill).`,
+    back:[
+      `Expected secure result of replaying a frame on a SecOC-protected PDU → <b>discarded, no state change</b>`,
+      `Expected result of repeated invalid SecurityAccess keys → <b>delay or lockout</b>`,
+      `Traceability matrix links → <b>threat, requirement, test, result</b>`,
+      `Weakness type → <b>CWE</b>; severity → <b>CVSS</b>`,
+      `PoC should be → <b>minimal, reproducible, documented</b>`,
+      `A test case with no expected result and no requirement link → <b>design flaw</b>`
+    ]
+  }
+];
+
 /* >>> ADD NEW TOPIC DECKS ABOVE THIS LINE <<< */
 
 /* ============================ CHEAT SHEETS ============================

@@ -2,7 +2,7 @@
 
 A single-file, offline-capable study hub for the TÜV SÜD Certified Automotive Foundation Level Penetration Tester (CAFPT) course.
 
-- **Flash cards** – Modules 1.1, 1.2 and all of Module 2
+- **Flash cards** – Modules 1.1, 1.2, all of Module 2 and all of Module 3
 - **Cheat sheets** – every topic except Module 4
 - **Practice MCQs** – every topic except Module 4 (370 questions)
 
